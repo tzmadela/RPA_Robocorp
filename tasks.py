@@ -62,8 +62,8 @@ def search_and_extract_news(search_term):
         logging.debug("Search submitted")
 
     # Wait for a longer duration (e.g., 30 seconds) before starting scraping
-    logging.debug("Waiting for 30 seconds before starting scraping...")
-    time.sleep(30)
+    logging.debug("Waiting for 10 seconds before starting scraping...")
+    time.sleep(10)
 
     # Extract news articles
     extract_news_articles(page, search_term)
