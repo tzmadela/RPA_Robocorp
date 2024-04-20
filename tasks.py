@@ -77,9 +77,21 @@ def extract_news_articles(page, search_term):
 
     logging.debug(f"Found {len(news_articles)} news articles")
 
-    # Create and open CSV file for writing
+    # Get the OUTPUT_DIR environment variable or specify a default output directory
+    output_dir = os.getenv("OUTPUT_DIR", default="output")
+
+    # Ensure that the output directory exists; create it if it doesn't
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Specify the filename for the CSV file
     csv_filename = "gothamist_news_data.csv"
-    with open(csv_filename, "w", newline="", encoding="utf-8") as csvfile:
+
+    # Construct the full path to the CSV file
+    csv_filepath = os.path.join(output_dir, csv_filename)
+
+    # Open the CSV file in the specified output directory for writing
+    with open(csv_filepath, "w", newline="", encoding="utf-8") as csvfile:
         csv_writer = csv.writer(csvfile)
 
         # Write headers to CSV file
@@ -106,7 +118,7 @@ def extract_news_articles(page, search_term):
 
             # Capture screenshot of the image and save to file
             image_filename = f"image_{index}.png"
-            capture_and_save_image(page, image_url, image_filename)
+            capture_and_save_image(page, image_url, os.path.join(output_dir, image_filename))
 
             title_count = count_occurrences(title, search_term)
             description_count = count_occurrences(description, search_term)
@@ -116,11 +128,11 @@ def extract_news_articles(page, search_term):
             csv_writer.writerow([title, date, description, image_url, title_count, description_count, "True" if contains_money else "False"])
 
 
-def capture_and_save_image(page, image_url, image_filename):
+def capture_and_save_image(page, image_url, image_filepath):
     # Capture screenshot of the image using its URL
     try:
         page.goto(image_url)
-        page.capture_screenshot(image_filename)
+        page.capture_screenshot(image_filepath)
     except Exception as e:
         logging.error(f"Error capturing image: {e}")
 
