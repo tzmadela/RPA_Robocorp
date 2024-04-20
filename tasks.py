@@ -41,9 +41,9 @@ def search_and_extract_news(search_term):
     # Click the search button to reveal the search input
     logging.debug("Clicking search button...")
     search_button = page.query_selector('button[aria-label="Go to search page"]')
-    if search_button:
-        search_button.click()
-        logging.debug("Search button clicked")
+    #if search_button:
+    search_button.click()
+    logging.debug("Search button clicked")
 
     # Wait for a short interval after clicking the search button
     time.sleep(5)
