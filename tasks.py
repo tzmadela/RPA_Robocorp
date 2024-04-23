@@ -2,7 +2,7 @@ import os
 import time
 import logging
 from robocorp.tasks import task
-from robocorp import browser
+from robocorp import browser, workitems
 from bs4 import BeautifulSoup
 import csv
 import re
@@ -11,27 +11,31 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @task
-def scrape_news_articles(search_term: str = "nyc") -> None:
-    try:
-        # Configure browser settings
-        browser.configure(slowmo=10)
+def scrape_news_articles() -> None:
+    for work_item in workitems.get_all():
+        search_term = work_item.payload.get("search_term", "nyc")
+        try:
+            # Configure browser settings
+            browser.configure(slowmo=10)
 
-        # Open the Gothamist website
-        open_website()
+            # Open the Gothamist website
+            open_website()
 
-        # Perform search and extract news articles
-        search_and_extract_news(search_term)
+            # Perform search and extract news articles
+            search_and_extract_news(search_term)
 
-    except Exception as e:
-        logging.exception("An error occurred during execution:")
-    finally:
-        # Close the browser context
-        browser.context().close()
+        except Exception as e:
+            logging.exception("An error occurred during execution:")
+            work_item.fail(exception_type='APPLICATION', code='UNCAUGHT_ERROR', message=str(e))
+        finally:
+            # Close the browser context
+            browser.context().close()
+            work_item.done()
 
 
 def open_website():
     logging.debug("Opening Gothamist website...")
-    browser.goto("https://gothamist.com/")
+    browser.goto("(link unavailable)")
     time.sleep(10)  # Wait for page to load
 
 
@@ -63,7 +67,7 @@ def search_and_extract_news(search_term):
 
     # Wait for a longer duration (e.g., 30 seconds) before starting scraping
     logging.debug("Waiting for 10 seconds before starting scraping...")
-    time.sleep(10)
+    time.sleep(10) 
 
     # Extract news articles
     extract_news_articles(page, search_term)
