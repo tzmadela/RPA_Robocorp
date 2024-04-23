@@ -1,16 +1,14 @@
 import os
 import time
 import logging
+from robocorp.tasks import task
+from robocorp import browser, workitems
+from bs4 import BeautifulSoup
 import csv
 import re
-
-from robocorp.tasks import task
-from robocorp import workitems, browser
-from bs4 import BeautifulSoup
 from robocorp.workitems import Input
 
 logging.basicConfig(level=logging.DEBUG)
-
 
 class GothamistScraper:
     def __init__(self):
@@ -21,31 +19,41 @@ class GothamistScraper:
         self.browser.configure(slowmo=10)
 
     def scrape_news_articles(self, work_item: Input) -> None:
+        if not work_item or not work_item.payload:
+            logging.error("Invalid work item or no payload provided.")
+            return
+
+        search_term = work_item.payload.get("search_term")
+        if not search_term:
+            logging.error("No search term provided in the work item.")
+            work_item.fail(
+                exception_type='APPLICATION',
+                code='MISSING_SEARCH_TERM',
+                message='No search term provided in the work item.'
+            )
+            return
+
         try:
-            if not work_item:
-                raise ValueError("No work item provided.")
-
-            search_term = work_item.payload.get("search_term")
-            if not search_term:
-                raise ValueError("No search term provided in the work item.")
-
             self.open_website()
-            self.search_and_extract_news(search_term)
+            self.search_and_extract_news(search_term, work_item)
         except Exception as e:
             logging.exception("An error occurred during execution:")
-            if work_item:
-                work_item.fail(
-                    exception_type='APPLICATION',
-                    code='UNCAUGHT_ERROR',
-                    message=str(e)
-                )
+            work_item.fail(
+                exception_type='APPLICATION',
+                code='UNCAUGHT_ERROR',
+                message=str(e)
+            )
+        finally:
+            self.browser.context().close()
+            if work_item.status != 'failed' and work_item.status != 'done':
+                work_item.done()
 
     def open_website(self):
         logging.debug("Opening Gothamist website...")
         self.browser.goto("https://gothamist.com/")
         time.sleep(10)  # Wait for page to load
 
-    def search_and_extract_news(self, search_term):
+    def search_and_extract_news(self, search_term, work_item: Input):
         page = self.browser.page()
 
         # Click the search button to reveal the search input
@@ -71,9 +79,9 @@ class GothamistScraper:
                     time.sleep(10)  # Wait before starting scraping
 
                     # Extract news articles
-                    self.extract_news_articles(page, search_term)
+                    self.extract_news_articles(page, search_term, work_item)
 
-    def extract_news_articles(self, page, search_term):
+    def extract_news_articles(self, page, search_term, work_item: Input):
         html_content = page.content()
         soup = BeautifulSoup(html_content, "html.parser")
         news_articles = soup.find_all("div", class_="v-card gothamist-card mod-horizontal mb-3 lg:mb-5 tag-small")
@@ -117,7 +125,6 @@ class GothamistScraper:
 
 scraper = GothamistScraper()
 
-
 @task
 def process_news_scraping():
     scraper.initialize()
@@ -125,14 +132,12 @@ def process_news_scraping():
         for work_item in workitems.inputs:
             scraper.scrape_news_articles(work_item)
     except Exception as err:
-        logging.exception("An error occurred during task execution:")
-        if workitems.inputs.current:
-            workitems.inputs.current.fail(
-                exception_type='APPLICATION',
-                code='UNCAUGHT_ERROR',
-                message=str(err)
-            )
-
+        print(err)
+        workitems.inputs.current.fail(
+            exception_type='APPLICATION',
+            code='UNCAUGHT_ERROR',
+            message=str(err)
+        )
 
 if __name__ == "__main__":
     process_news_scraping()
