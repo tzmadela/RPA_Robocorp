@@ -35,7 +35,7 @@ def scrape_news_articles() -> None:
 
 def open_website():
     logging.debug("Opening Gothamist website...")
-    browser.goto("(link unavailable)")
+    browser.goto("https://gothamist.com/")
     time.sleep(10)  # Wait for page to load
 
 
@@ -146,11 +146,10 @@ def count_occurrences(text, pattern):
 
 
 def detect_money(text):
+    #Finding money pattern from text.
     money_patterns = r"\$\d+(\.\d+)?|\d+\s*dollars|\d+\s*USD"
     return bool(re.search(money_patterns, text, re.IGNORECASE))
 
 
 if __name__ == "__main__":
-    # Specify the search term as a variable here (e.g., "NYC subway strike")
-    search_term = "nyc"
-    scrape_news_articles(search_term)
+    scrape_news_articles()
