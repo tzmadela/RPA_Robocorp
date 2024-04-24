@@ -5,7 +5,7 @@ tasks:
   Browser Example:
     shell: python -m robocorp.tasks run tasks.py
     environmentVariables:
-      RC_WORKITEM_INPUT_PATH: input/workitems.json
+      RC_WORKITEM_INPUT_PATH: workitems.json
 
 environmentConfigs:
   - environment_windows_amd64_freeze.yaml
@@ -23,4 +23,4 @@ ignoreFiles:
   - .gitignore
 
 environmentVariables:
-  RC_WORKITEM_INPUT_PATH: input/workitems.json
+  RC_WORKITEM_INPUT_PATH: workitems.json
