@@ -15,7 +15,7 @@ class GothamistScraper:
     def __init__(self):
         self.browser = browser
         self.output_dir = os.getenv("OUTPUT_DIR", default="output")
-        os.makedirs(self.output_dir, exist_ok=True)  # Ensure the output directory exists
+        os.makedirs(self.output_dir, exist_ok=True)  
 
     def initialize(self):
         self.browser.configure(slowmo=10)

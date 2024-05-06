@@ -1,12 +1,15 @@
 [
     {
-        "payload": {"search_term": "nyc"}
+        "payload": 
+            {"search_term": "nyc"}
     },
     {
-        "payload": {"search_term": "weather"}
+        "payload": 
+            {"search_term": "weather"}
     },
     {
-        "payload": {"search_term": "restaurants"}
+        "payload": 
+            {"search_term": "restaurants"}
     }
  ]
  
